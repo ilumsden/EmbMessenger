@@ -35,7 +35,7 @@ namespace emb
             shared::Reader m_reader;
 
             uint16_t m_message_id;
-            std::map<std::type_index, uint8_t> m_command_ids;
+            std::map<std::type_index, uint16_t> m_command_ids;
             std::map<uint16_t, std::shared_ptr<Command>> m_commands;
             std::shared_ptr<Command> m_current_command;
             uint8_t m_parameter_index;
@@ -113,7 +113,7 @@ namespace emb
              * @param id The ID for the command type
              */
             template <typename CommandType>
-            void registerCommand(const uint8_t id)
+            void registerCommand(const uint16_t id)
             {
                 static_assert(!std::is_same<Command, CommandType>::value, "You can't register the base class Command.");
                 static_assert(std::is_base_of<Command, CommandType>::value, "Ensure CommandType is derived from Command.");
@@ -139,6 +139,28 @@ namespace emb
             {
                 command->m_type_index = typeid(CommandType);
                 return std::static_pointer_cast<CommandType>(send(std::static_pointer_cast<Command>(command)));
+            }
+
+            /**
+             * @brief Send a command to the device.
+             *
+             * @param command Command to send
+             * @param commandId Id of the Command to send
+             * @return std::shared_ptr<Command> Command sent to the device
+             */
+            std::shared_ptr<Command> send(std::shared_ptr<Command> command, uint16_t commandId);
+
+            /**
+             * @brief Send a command to the device.
+             *
+             * @param command Command to send
+             * @param commandId Id of the Command to send
+             * @return std::shared_ptr<CommandType> Command sent to the device
+             */
+            template <typename CommandType>
+            std::shared_ptr<CommandType> send(std::shared_ptr<CommandType> command, uint16_t commandId)
+            {
+                return std::static_pointer_cast<CommandType>(send(std::static_pointer_cast<Command>(command), commandId));
             }
 
             /**
@@ -181,7 +203,7 @@ namespace emb
              *
              * @return True if the all commands sent have been received
              */
-            bool commandsReceived() const;
+            bool commandsReceived();
 
         protected:
             class ResetCommand : public Command
@@ -192,23 +214,23 @@ namespace emb
 
             class RegisterPeriodicCommand : public Command
             {
-                uint8_t m_command_id;
+                uint16_t m_command_id;
                 uint32_t m_period;
 
             public:
-                RegisterPeriodicCommand(uint8_t commandId, uint32_t period);
+                RegisterPeriodicCommand(uint16_t commandId, uint32_t period);
 
                 virtual void send(EmbMessenger* messenger);
             };
 
             class UnregisterPeriodicCommand : public Command
             {
-                uint8_t m_command_id;
+                uint16_t m_command_id;
 
             public:
                 uint16_t m_periodic_message_id;
 
-                UnregisterPeriodicCommand(uint8_t commandId);
+                UnregisterPeriodicCommand(uint16_t commandId);
 
                 virtual void send(EmbMessenger* messenger);
                 virtual void receive(EmbMessenger* messenger);
