@@ -1,3 +1,6 @@
+#ifndef PYBUFFER_HPP
+#define PYBUFFER_HPP
+
 #include <EmbMessenger/IBuffer.hpp>
 
 #include <pybind11/pybind11.h>
@@ -94,16 +97,4 @@ class PyBuffer : public emb::shared::IBuffer
         }
 };
 
-PYBIND11_MODULE(ibuffer, m) {
-    py::class<emb::shared::IBuffer, PyBuffer>(m, "IBuffer")
-        .def(py::init<>())
-        .def("writeByte", &IBuffer::writeByte)
-        .def("peek", &IBuffer::peek)
-        .def("readByte", &IBuffer::readByte)
-        .def("empty", &IBuffer::empty)
-        .def("size", &IBuffer::size)
-        .def("messages", &IBuffer::messages)
-        .def("update", &IBuffer::update)
-        .def("zero", &IBuffer::zero)
-        .def("debugPrint", &IBuffer::print);
-}
+#endif
